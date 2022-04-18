@@ -177,7 +177,7 @@ impl Contract {
             .and_then(|payout_object| {
                 //Revisamos si length de payout es > 10 (Máximo de cuentas para el payout) o si es vacio, en ese caso retornamos None
                 //Check if the length of payout is > 10 (Maximum accounts for payout) or if it is empty, in that case return None
-                if payout_object.len() > MAX_ROYALTIES_ACCOUNTS || payout_object.is_empty() {
+                if payout_object.payout.len() > MAX_ROYALTIES_ACCOUNTS as usize || payout_object.payout.is_empty() {
                     let err_msg_max_roy_amount = format!(
                         "The payout has more than {} accounts",
                         MAX_ROYALTIES_ACCOUNTS

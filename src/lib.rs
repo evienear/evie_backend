@@ -100,4 +100,99 @@ impl Contract {
         };
         this
     }
+
+    //Damos permiso a los usuarios par adepositar storage, para cubrir costos del contrato
+    //Allow users to deposit storage, to cover the contract's costs
+    #[payable]
+    pub fn storage_deposit(&mut self, account_id: Option<AccountId>) {
+        //Obtenemos el account ID al que le agregaremos el storage
+        //Get the account ID to which we'll add the storage
+        let storage_account_id = account_id
+        //convertimos el valid account ID en un account ID
+        //convert the valid account ID into an account ID
+        .map(|a| a.into())
+        //Si no especificamos un account ID, usaremos el caller
+        //If we don't specify an account ID, we'll use the caller
+        .unwrap_or_else(|| {env::predecessor_account_id()});
+        //TODO: REVISAR LINEA DE ARRIBA ||
+
+        //Obtenemos el storage depositado en esta transaccion
+        //Get the storage deposit made in this transaction
+        let deposit = env::attached_deposit();
+
+        //Revisamos si el deposito es >= el mino storage para una venta
+        //Check if the deposit is >= the minimum storage for a sale
+        assert!(
+            deposit >= STORAGE_PER_SALE,
+            "Deposit must be at least {}",
+            STORAGE_PER_SALE
+        );
+
+        //Obtenemos el balance de la cuenta (Si la cuenta no está mapeada default 0)
+        //Get the balance of the account (if the account is not mapped default 0)
+        let mut balance: u128 = self.storage_deposits.get(&storage_account_id).unwrap_or(0);
+        //Añadimos el deposito a su balance
+        //Add the deposit to its balance
+        balance += deposit;
+        //Insertamos el balance de vuelta en el mapa para ese account ID
+        //Insert the balance back into the map for that account ID
+        self.storage_deposits.insert(&storage_account_id, &balance);
+    }
+
+    //Permitimos a los usuarios retirar el storage depositado en exceso
+    //Allow users to withdraw the storage deposit excess
+    pub fn storage_withdraw(&mut self) {
+        //Por seguridad verificamos que se anexe 1 yoctoNEAR
+        //For security, we verify that 1 yoctoNEAR is attached
+        assert_one_yocto();
+
+        //La cuenta para withdraw es siempre el caller
+        //The account for withdraw is always the caller
+        let owner_id = env::predecessor_account_id();
+        //Obtenemos el balance de la cuenta revisando el mapa, si no está mapeado default 0
+        //Get the balance of the account checking the map, if not mapped default 0
+        let mut amount = self.storage_deposits.remove(&owner_id).unwrap_or(0);
+
+        //Verificamos cuantas ventas tiene el usuario en este momento
+        //Check how many sales the user has in this moment
+        let sales = self.by_owner_id.get(&owner_id);
+        //Obtenemos el length de las ventas
+        //Get the length of the sales
+        let len = sales.map(|s| s.len()).unwrap_or_default();
+        //¿Cuanto NEAR está siendo usado por esas ventas?
+        //How much NEAR is being used by those sales?
+        let diff = u128::from(len) * STORAGE_PER_SALE;
+        //Obtenemos el exceso de storage depositado
+        //Get the excess storage deposit
+        amount -= diff;
+
+        //Si el exceso es mayor a 0, entonces retiramos el exceso
+        //If the excess is greater than 0, we withdraw the excess
+        if amount > 0 {
+            //Retiramos el exceso
+            //Withdraw the excess
+            Promise::new(owner_id.clone()).transfer(amount);
+        }
+        //Despues debemos insertar el storage en uso en el mapa
+        //After we insert the storage in use in the map
+        if diff > 0 {
+            self.storage_deposits.insert(&owner_id, &diff);
+        }
+    }
+
+    //Views
+
+    //Retornamos el minimo storage para una venta
+    //Return the minimum storage for a sale
+    pub fn storage_minimum_balance(&self) -> U128 {
+        U128(STORAGE_PER_SALE)
+    }
+
+    //Retornamos el storage pagado por una cuenta
+    //Return the storage paid by an account
+    pub fn storage_balance_of(&self, account_id: AccountId) -> U128 {
+        U128(self.storage_deposits.get(&account_id).unwrap_or(0))
+    }
+
 }
+
