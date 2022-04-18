@@ -16,11 +16,11 @@ impl Contract {
     //Returns the number of sales an account has (The result is a String)
     pub fn get_supply_by_owner_id(
         &self,
-        accountId: AccountId,
+        account_id: AccountId,
     ) -> U64 {
         //Obtenemos las ventas del owner ID
         //Get the sales of the owner ID
-        let by_owner_id = self.by_owner_id.get(&accountId);
+        let by_owner_id = self.by_owner_id.get(&account_id);
         //Si hay algun set, retornamos el lenght, sino retornamos 0
         //If there is any set, return the lenght, else return 0
         if let Some(by_owner_id) = by_owner_id {
