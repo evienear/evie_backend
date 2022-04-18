@@ -12,9 +12,28 @@ impl Contract {
         U64(self.sales.len())
     }
 
-    //Retorna el número de ventas que tiene una cuenta dada
-    //Returns the number of sales an account has
+    //Retorna el número de ventas que tiene una cuenta dada (El resultado es un String)
+    //Returns the number of sales an account has (The result is a String)
     pub fn get_supply_by_owner_id(
+        &self,
+        accountId: AccountId,
+    ) -> U64 {
+        //Obtenemos las ventas del owner ID
+        //Get the sales of the owner ID
+        let by_owner_id = self.by_owner_id.get(&accountId);
+        //Si hay algun set, retornamos el lenght, sino retornamos 0
+        //If there is any set, return the lenght, else return 0
+        if let Some(by_owner_id) = by_owner_id {
+            U64(by_owner_id.len())
+        } else {
+            U64(0)
+        }
+    }
+
+
+    //Retorna una lista paginada de objectos Sale por una cuenta dada (El resultado es un Vector)
+    //Returns a paginated list of Sale objects by an account (The result is a Vector)
+    pub fn get_sales_by_owner_id(
         &self, 
         account_id: AccountId, 
         from_index: Option<U128>,

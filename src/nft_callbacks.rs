@@ -59,6 +59,77 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
             signer_id,
             "nft_on_approve should only be called by the owner of the nft"
         );
+
+        //Verificar si hay storage suficiente
+        //Check if there is enough storage
+
+        //Obtenemos el storage (Recordemos que .o convierte de U128 a u128)
+        //Get the storage (Remember that .o converts from U128 to u128)
+        let storage_amount = self.storage_minimum_balance().0;
+        //Obtenemos el storage pagado por el owner
+        //Get the storage paid by the owner
+        let owner_paid_storage = self.storage_deposits.get(&signer_id).unwrap_or(0);
+        //Obtener el storage requerido (storage por (numero de ventas mas 1))
+        //Get the storage required (storage by (number of sales plus 1))
+        let signer_storage_required = (self.get_supply_by_owner_id(signer_id).0+1) as u128 * storage_amount;
+
+        //Comprobamos que el storage pagado por el owner sea >= suficiente
+        //Check that the owner paid storage is >= sufficient
+        assert!(
+            owner_paid_storage >= signer_storage_required,
+            "The owner paid storage is not sufficient: {}, for {} sales at {} rate of per sale",
+            owner_paid_storage, signer_storage_required / STORAGE_PER_SALE, STORAGE_PER_SALE
+        );
+
+        //Si todo fue correcto, añadimos la venta
+        //If everything was correct, add the sale
+        let SaleArgs { sale_conditions } =
+            //Las condiciones vienen del msg, el market asume que el usuario ha pasado msg correcto, si no panic
+            //The conditions come from the msg, the market assumes that the user has passed a correct msg, if not panic
+            near_sdk::serde_json::from_str(&msg).expect("Failed to deserialize msg, not valid");
+        
+        //Creamos el ID unico de la venta (contract + DELIMETER + token_id)
+        //Create the unique ID of the sale (contract + DELIMETER + token_id)
+        let contract_and_token_id = format!("{}{}{}", nft_contract_id, DELIMETER, token_id);
+
+        //Insertamos el valor en el mapa de ventas, la llave es el ID unico, value es el objeto Sale
+        //Insert the value in the map of sales, the key is the unique ID, value is the object Sale
+        self.sales.insert(
+            &contract_and_token_id,
+            &Sale {
+                owner_id: owner_id.clone(), //Owner = Dueño
+                approval_id, //Approval ID = ID de aprobación
+                nft_contract_id: nft_contract_id.to_string(), //NFT Contract ID = ID del contrato NFT
+                token_id: token_id.clone(),//Token ID = ID del token
+                sale_conditions, //Sale Conditions = Condiciones de la venta
+            },
+        );
+
+        //Funciones extras para view
+        //Extra functions para view
+
+        //Obtener las ventas por el owner ID, si no hay creamos un set vacio
+        //Get the sales by the owner ID, if there is no create an empty set
+        let mut by_owner_id = self.by_owner_id.get(&owner_id).unwrap_or_else(|| {
+            UnorderedSet::new(
+                StorageKey::ByOwnerIdInner {
+                    //obtenemos un prefijo unico para la colección de un hash del owner
+                    //get a unique prefix for the collection of a hash of the owner
+                    account_id_hash: hash_account_id(&owner_id),
+                }
+                .try_to_vec()
+                .unwrap(),
+            )
+        });
+
+        //Insertar el ID del token en el set
+        //Insert the token ID in the set
+        by_owner_id.insert(&token_id);
+        //insertamos el set de vuelta a la coleccion por el contract ID de NFT
+        //insert the set back to the collection by the NFT contract ID
+        self.by_owner_id.insert(&nft_contract_id, &by_owner_id);
+
+        //TODO: add by_nft_contract_id
     }
     
 }

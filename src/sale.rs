@@ -3,7 +3,7 @@ use near_sdk::promise_result_as_success;
 
 //Estructura que almacena infromación importante acerca de cada sale en el market
 //Structure that stores important information about each sale in the market
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Sale {
     //owner de la sale

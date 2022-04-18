@@ -42,11 +42,11 @@ pub type ContractAndTokenId = String;
 
 //definimos el tipo Payout del contrato NFT que usaremos como estandar para las regalías
 //defines the payout type we'll be parsing from the NFT contract as a part of the royalty standard.
- #[derive(Serialize, Deserialize)]
- #[serde(crate = "near_sdk::serde")]
- pub struct Payout {
-     pub payout: HashMap<AccountId, U128>,
-} 
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct Payout {
+    pub payout: HashMap<AccountId, U128>,
+}
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -70,7 +70,7 @@ pub struct Contract {
     pub storage_deposits: LookupMap<AccountId, Balance>,
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
+#[derive(BorshStorageKey, BorshSerialize)]
 pub enum StorageKey {
     Sales,
     ByOwnerId,
