@@ -43,8 +43,19 @@ get_supply_sales()
 //Returns the number of sales an account has (The result is a String)
 get_supply_by_owner_id(account_id: AccountId)
 
+//Retorna una lista paginada de objectos Sale por una cuenta dada (El resultado es un Vector)
+//Returns a paginated list of Sale objects by an account (The result is a Vector)
 
+todo!()//TODO - JEPH: Revisar que funcionen correctamente los parametros opcionales
+get_sales_by_owner_id(account_id: AccountId, from_index: Option<U128>, limit: Option<u64>,)
 
+//Retornamos numero de ventas por contrato nft (retorna String)
+//Returns the number of sales by contract nft (Return String)
+get_supply_by_nft_contract_id(nft_contract_id: AccountId)
+
+//Retornamos numero de ventas por contrato nft (retorna Vector de sales)
+//Returns the number of sales by contract nft (Return Vector of sales)
+get_sales_by_nft_contract_id(nft_contract_id: AccountId, from_index: Option<U128>, limit: Option<u64>,)
 __________________________________________________________________________________________________________________________________________________
 
 //Listando NFT
