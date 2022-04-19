@@ -56,6 +56,11 @@ get_supply_by_nft_contract_id(nft_contract_id: AccountId)
 //Retornamos numero de ventas por contrato nft (retorna Vector de sales)
 //Returns the number of sales by contract nft (Return Vector of sales)
 get_sales_by_nft_contract_id(nft_contract_id: AccountId, from_index: Option<U128>, limit: Option<u64>,)
+
+//Obtener información de la venta por ID unico (contract + DELIMETER + token ID)
+//Get information of the sale by unique ID (contract + DELIMETER + token ID)
+todo!()//TODO - JEPH: Corregir Typo
+get_sale(nft_contract_token: ContractAndTokenId)
 __________________________________________________________________________________________________________________________________________________
 
 //Listando NFT
