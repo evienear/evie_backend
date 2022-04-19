@@ -30,9 +30,22 @@ storage_withdraw() //Sin parametros extra, solo el que llama - No extra paramete
 //Returns the minimum balance required for an NFT listed
 storage_minimum_balance()
 
+__________________________________________________________________________________________________________________________________________________
+
+//Funciones que listan NFTs a la venta en el Marketplace
+//Functions that list NFTs on sale on the Marketplace
+
+//Retorna el número de ventas que tiene el contrato (Devuelve U64 (String))
+//Returns the number of sales the contract has (Return U64 (String))
+get_supply_sales()
+
+//Retorna el número de ventas que tiene una cuenta dada (El resultado es un String)
+//Returns the number of sales an account has (The result is a String)
+get_supply_by_owner_id(account_id: AccountId)
 
 
 
+__________________________________________________________________________________________________________________________________________________
 
 //Listando NFT
 //Listing NFT
