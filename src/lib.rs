@@ -3,7 +3,7 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{
+use near_sdk::{ promise_result_as_success,
     assert_one_yocto, env, ext_contract, near_bindgen, AccountId, Balance,
     Gas, PanicOnDefault, Promise, CryptoHash, BorshStorageKey,
 };
@@ -12,6 +12,7 @@ use std::collections::HashMap;
  use crate::external::*;
  use crate::internal::*;
  use crate::sale::*;
+ use crate::cross_contract_calls::*;
 
 use near_sdk::env::STORAGE_PRICE_PER_BYTE;
 
@@ -20,9 +21,11 @@ use near_sdk::env::STORAGE_PRICE_PER_BYTE;
  mod nft_callbacks;
  mod sale;
  mod sale_views;
+ mod cross_contract_calls;
 
 //Constantes de gas para las llamadas
 //Gas consts for the calls
+const GAS_FOR_CROSS_CONTRACT_CALL: Gas = Gas(5_000_000_000_000);
 const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
 const NO_DEPOSIT: Balance = 0;
@@ -36,7 +39,7 @@ static DELIMETER: &str = ".";
 //Tipos personalizados para facilidad de lectura
 //Custom types for readability
 pub type SalePriceInYoctoNear = U128;
-pub type TokenId = String;
+use near_contract_standards::non_fungible_token::{Token, TokenId};
 pub type FungibleTokenId = AccountId;
 pub type ContractAndTokenId = String;
 
@@ -194,5 +197,114 @@ impl Contract {
         U128(self.storage_deposits.get(&account_id).unwrap_or(0))
     }
 
+
+    //Llamadas a los contratos externos
+    //Cross Contract Calls
+
+    //Obtener la cantidad total de NFTs minteados del contrato
+    //Get the total amount of NFTs minted by the contract
+    pub fn nft_total_supply_marketplace(
+        &self,
+        marketplace_contract_id: AccountId,
+    ) -> Promise {
+        ext_paras::nft_total_supply(
+            marketplace_contract_id,
+            //AccountId::new_unchecked(String::from("paras-token-v2.testnet")), //contract
+            0, //yoctoNEAR to attach,
+            GAS_FOR_CROSS_CONTRACT_CALL, //gas to attach,
+        ).then(
+            ext_nft_dos::on_nft_total_supply(
+                env::current_account_id(),
+                0, //yoctoNEAR to attach,
+                GAS_FOR_CROSS_CONTRACT_CALL, //gas to attach,
+            )
+        )
+    }
+
+    //Obtener los tokens de un usuario
+    //Get the tokens of a user
+
+    pub fn nft_tokens_for_owner(
+        &self,
+        account_id: AccountId,
+        from_index: Option<U128>,
+        limit: Option<u64>,
+        marketplace_contract_id: AccountId,
+    ) -> Promise {
+        ext_paras::nft_tokens_for_owner(
+            account_id,
+            from_index,
+            // Some(from_index.unwrap_or(U128(0))),
+            limit,
+            marketplace_contract_id,
+            0,
+            GAS_FOR_CROSS_CONTRACT_CALL,
+        ).then(
+            ext_nft_dos::on_nft_tokens_for_owner(
+                env::current_account_id(),
+                0,
+                GAS_FOR_CROSS_CONTRACT_CALL,
+            )
+        )
+    }
+
+    #[payable]
+    pub fn nft_approve(
+        &mut self,
+        token_id: TokenId,
+        //account_id: AccountId,
+        msg: Option<String>,
+        marketplace_contract_id: AccountId,
+    ) {
+        ext_paras::nft_approve(
+            token_id,
+            env::current_account_id(),
+            msg,
+            marketplace_contract_id,
+            1,
+            GAS_FOR_CROSS_CONTRACT_CALL,
+        );
+    }
+
+    //Callback de Funciones externas
+    //Callback de External Functions
+
+    //Obtener la cantidad total de NFTs minteados del contrato
+    //Get the total amount of NFTs minted by the contract
+    #[private]
+    pub fn on_nft_total_supply(
+        &mut self,
+    ) -> U128 {
+        let result = promise_result_as_success();
+        if result.is_none() {
+            env::panic_str("on_nft_total_supply: result is None");
+        }
+        let ret = near_sdk::serde_json::from_slice::<U128>(&result.unwrap()).expect("U128");
+        return ret;
+    }
+
+    //Obtener los tokens de un usuario
+    //Get the tokens of a user
+    #[private]
+    pub fn on_nft_tokens_for_owner(
+        &mut self,
+    ) -> Vec<Token> {
+        let result = promise_result_as_success();
+        if result.is_none() {
+            env::panic_str("on_nft_tokens_for_owner: result is None");
+        }
+        let ret = near_sdk::serde_json::from_slice::<Vec<Token>>(&result.unwrap()).expect("Vec<Token>");
+        return ret;
+    }
+
 }
 
+    //No se puede usar esta funcion
+    // pub fn market_example_multiple(
+    //     &self,
+    //     marketplaces: Vec<AccountId>
+    // ) {
+    //     for marketplace in marketplaces {
+    //         self.nft_total_supply_marketplace(marketplace);
+    //     }
+    // }

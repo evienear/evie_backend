@@ -17,3 +17,13 @@ trait ExtContract {
         max_len_payout: u32, //Longitud máxima del payout = Max length of payout
     );
 }
+
+// #[ext_contract(ext_nft)]
+// trait ExtNft {
+//     fn nft_tokens_for_owner(
+//         &self,
+//         account_id: AccountId,
+//         from_index: Option<u32>,
+//         limit: Option<u64>,
+//     );
+// }

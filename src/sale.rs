@@ -153,6 +153,54 @@ impl Contract {
             GAS_FOR_ROYALTIES,
         ))
     }
+
+    // pub fn nft_tokens_for_owner_extern(
+    //     &self,
+    //     account_id: AccountId,
+    //     nft_contract_id: AccountId,
+    //     from_index: Option<U128>,
+    //     limit: Option<u64>,
+    // ) -> Promise {
+    //     ext_nft::nft_tokens_for_owner(
+    //         account_id,
+    //         nft_contract_id,
+    //         from_index,
+    //         limit,
+    //     ).then(ext_self::resolve_nft_tokens(&self))
+    // }
+
+    // #[private]
+    // pub fn resolve_nft_tokens(
+    //     &self,
+    //     // account_id: AccountId,
+    //     // nft_contract_id: AccountId,
+    //     // from_index: Option<U128>,
+    //     // limit: Option<u64>,
+    // ) -> vec! {
+    //     let tokens = Vec::new();
+    //     let promise_resolve = promise_result_as_success().and_then(|val| {
+    //         near_sdk::serde_json::from_slice::<Vec<String>>(&val)
+    //         .ok()
+    //         .and_then(|v| {
+    //             if v.len() == 0 {
+    //                 None
+    //             } else {
+    //                 env::log_str("Tokens for owner: {v:?}");
+    //                 Some(v)
+    //             }
+    //         });
+
+    //         // let mut tokens = val.into_iter().map(|token_id| token_id.to_string()).collect::<Vec<String>>();
+    //         // if let Some(from_index) = from_index {
+    //         //     let from_index = from_index.0 as usize;
+    //         //     let limit = limit.unwrap_or(tokens.len() - from_index) as usize;
+    //         //     tokens.drain(from_index..from_index + limit);
+    //         // }
+    //         // Promise::resolve(tokens)
+            
+    //     });
+    // }
+
     //Función privada que resuelve la promesa, verifica que no haya habido problema, si todo está correcto paga a las cuentas,
     // y si no, devuelve el dinero al comprador
     //Private function that resolves the promise, verifies that there is no problem, if everything is correct, pays the accounts
@@ -240,4 +288,24 @@ trait ExtSelf {
         buyer_id: AccountId,
         price: U128,
     ) -> Promise;
+    pub fn on_nft_total_supply(&mut self) -> U128
+    {
+        let result = promise_result_as_success();
+        if result.is_none() {
+            env::panic_str("on_nft_total_supply: result is None");
+        }
+        let nenene = near_sdk::serde_json::from_slice::<U128>(&result.unwrap()).expect("U128");
+        return nenene;
+    }
 }
+
+// #[ext_contract(ext_nft)]
+// trait ExtNft {
+//     fn nft_transfer_payout(
+//         &mut self,
+//         nft_contract_id: AccountId,
+//         token_id: U128,
+//         receiver_id: AccountId,
+//         amount: U128,
+//     ) -> Promise;
+// }
