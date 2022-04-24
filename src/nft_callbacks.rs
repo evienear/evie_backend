@@ -124,12 +124,35 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
 
         //Insertar el ID del token en el set
         //Insert the token ID in the set
-        by_owner_id.insert(&token_id);
+        //by_owner_id.insert(&token_id);
+        by_owner_id.insert(&contract_and_token_id);
         //insertamos el set de vuelta a la coleccion por el contract ID de NFT
         //insert the set back to the collection by the NFT contract ID
         self.by_owner_id.insert(&nft_contract_id, &by_owner_id);
 
-        //TODO: add by_nft_contract_id
+        //Obtener el token ID del contrato nft dado, si no hay creamos un set vacio
+        //get the token IDs for the given nft contract ID. If there are none, we create a new empty set
+        let mut by_nft_contract_id = self
+        .by_nft_contract_id
+        .get(&nft_contract_id)
+        .unwrap_or_else(|| {
+            UnorderedSet::new(
+                StorageKey::ByNFTContractIdInner {
+                    //Obtenemos un prefijo unico para la coleccion hashing el owner
+                    //Get a unique prefix for the collection hashing the owner
+                    account_id_hash: hash_account_id(&nft_contract_id),
+                }
+                .try_to_vec()
+                .unwrap(),
+            )
+        });
+
+        //Insertar el ID del token en el set
+        //Insert the token ID in the set
+        by_nft_contract_id.insert(&token_id);
+        //Insertamos el set de vuelta a la coleccion por el contract ID de NFT
+        //Insert the set back to the collection by the NFT contract ID
+        self.by_nft_contract_id.insert(&nft_contract_id, &by_nft_contract_id);
     }
     
 }

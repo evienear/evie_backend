@@ -288,15 +288,6 @@ trait ExtSelf {
         buyer_id: AccountId,
         price: U128,
     ) -> Promise;
-    pub fn on_nft_total_supply(&mut self) -> U128
-    {
-        let result = promise_result_as_success();
-        if result.is_none() {
-            env::panic_str("on_nft_total_supply: result is None");
-        }
-        let nenene = near_sdk::serde_json::from_slice::<U128>(&result.unwrap()).expect("U128");
-        return nenene;
-    }
 }
 
 // #[ext_contract(ext_nft)]
