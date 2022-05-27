@@ -153,6 +153,7 @@ impl Contract {
             GAS_FOR_ROYALTIES,
         ))
     }
+    
     //Función privada que resuelve la promesa, verifica que no haya habido problema, si todo está correcto paga a las cuentas,
     // y si no, devuelve el dinero al comprador
     //Private function that resolves the promise, verifies that there is no problem, if everything is correct, pays the accounts
