@@ -1,27 +1,27 @@
-#![deny(warnings)]  // deny warnings in the code
+//#![deny(warnings)] // deny warnings in the code
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{ promise_result_as_success,
-    assert_one_yocto, env, ext_contract, near_bindgen, AccountId, Balance,
-    Gas, PanicOnDefault, Promise, CryptoHash, BorshStorageKey,
+use near_sdk::{
+    assert_one_yocto, env, ext_contract, near_bindgen, promise_result_as_success, AccountId,
+    Balance, BorshStorageKey, CryptoHash, Gas, PanicOnDefault, Promise,
 };
 use std::collections::HashMap;
 
- use crate::external::*;
- use crate::internal::*;
- use crate::sale::*;
- use crate::cross_contract_calls::*;
+use crate::cross_contract_calls::*;
+use crate::external::*;
+use crate::internal::*;
+use crate::sale::*;
 
 use near_sdk::env::STORAGE_PRICE_PER_BYTE;
 
- mod external;
- mod internal;
- mod nft_callbacks;
- mod sale;
- mod sale_views;
- mod cross_contract_calls;
+mod cross_contract_calls;
+mod external;
+mod internal;
+mod nft_callbacks;
+mod sale;
+mod sale_views;
 
 //Constantes de gas para las llamadas
 //Gas consts for the calls
@@ -39,7 +39,8 @@ static DELIMETER: &str = ".";
 //Tipos personalizados para facilidad de lectura
 //Custom types for readability
 pub type SalePriceInYoctoNear = U128;
-use near_contract_standards::non_fungible_token::{Token, TokenId};
+pub type TokenId = String;
+//use near_contract_standards::non_fungible_token::{Token, TokenId};
 pub type FungibleTokenId = AccountId;
 pub type ContractAndTokenId = String;
 
@@ -111,12 +112,12 @@ impl Contract {
         //Obtenemos el account ID al que le agregaremos el storage
         //Get the account ID to which we'll add the storage
         let storage_account_id = account_id
-        //convertimos el valid account ID en un account ID
-        //convert the valid account ID into an account ID
-        .map(|a| a.into())
-        //Si no especificamos un account ID, usaremos el caller
-        //If we don't specify an account ID, we'll use the caller
-        .unwrap_or_else(|| {env::predecessor_account_id()});
+            //convertimos el valid account ID en un account ID
+            //convert the valid account ID into an account ID
+            .map(|a| a.into())
+            //Si no especificamos un account ID, usaremos el caller
+            //If we don't specify an account ID, we'll use the caller
+            .unwrap_or_else(|| env::predecessor_account_id());
         //TODO: REVISAR LINEA DE ARRIBA ||
 
         //Obtenemos el storage depositado en esta transaccion
@@ -197,32 +198,27 @@ impl Contract {
         U128(self.storage_deposits.get(&account_id).unwrap_or(0))
     }
 
-
     //Llamadas a los contratos externos
     //Cross Contract Calls
 
-    //Obtener la cantidad total de NFTs minteados del contrato
-    //Get the total amount of NFTs minted by the contract
-    pub fn nft_total_supply_marketplace(
-        &self,
-        marketplace_contract_id: AccountId,
-    ) -> Promise {
+    // //Obtener la cantidad total de NFTs minteados del contrato
+    // //Get the total amount of NFTs minted by the contract
+    pub fn nft_total_supply_marketplace(&self, marketplace_contract_id: AccountId) -> Promise {
         ext_paras::nft_total_supply(
             marketplace_contract_id,
             //AccountId::new_unchecked(String::from("paras-token-v2.testnet")), //contract
-            0, //yoctoNEAR to attach,
+            0,                           //yoctoNEAR to attach,
             GAS_FOR_CROSS_CONTRACT_CALL, //gas to attach,
-        ).then(
-            ext_nft_dos::on_nft_total_supply(
-                env::current_account_id(),
-                0, //yoctoNEAR to attach,
-                GAS_FOR_CROSS_CONTRACT_CALL, //gas to attach,
-            )
         )
+        .then(ext_nft_dos::on_nft_total_supply(
+            env::current_account_id(),
+            0,                           //yoctoNEAR to attach,
+            GAS_FOR_CROSS_CONTRACT_CALL, //gas to attach,
+        ))
     }
 
-    //Obtener los tokens de un usuario
-    //Get the tokens of a user
+    // //Obtener los tokens de un usuario
+    // //Get the tokens of a user
 
     pub fn nft_tokens_for_owner(
         &self,
@@ -239,13 +235,12 @@ impl Contract {
             marketplace_contract_id,
             0,
             GAS_FOR_CROSS_CONTRACT_CALL,
-        ).then(
-            ext_nft_dos::on_nft_tokens_for_owner(
-                env::current_account_id(),
-                0,
-                GAS_FOR_CROSS_CONTRACT_CALL,
-            )
         )
+        .then(ext_nft_dos::on_nft_tokens_for_owner(
+            env::current_account_id(),
+            0,
+            GAS_FOR_CROSS_CONTRACT_CALL,
+        ))
     }
 
     #[payable]
@@ -272,9 +267,7 @@ impl Contract {
     //Obtener la cantidad total de NFTs minteados del contrato
     //Get the total amount of NFTs minted by the contract
     #[private]
-    pub fn on_nft_total_supply(
-        &mut self,
-    ) -> U128 {
+    pub fn on_nft_total_supply(&mut self) -> U128 {
         let result = promise_result_as_success();
         if result.is_none() {
             env::panic_str("on_nft_total_supply: result is None");
@@ -286,25 +279,23 @@ impl Contract {
     //Obtener los tokens de un usuario
     //Get the tokens of a user
     #[private]
-    pub fn on_nft_tokens_for_owner(
-        &mut self,
-    ) -> Vec<Token> {
+    pub fn on_nft_tokens_for_owner(&mut self) -> Vec<Token> {
         let result = promise_result_as_success();
         if result.is_none() {
             env::panic_str("on_nft_tokens_for_owner: result is None");
         }
-        let ret = near_sdk::serde_json::from_slice::<Vec<Token>>(&result.unwrap()).expect("Vec<Token>");
+        let ret =
+            near_sdk::serde_json::from_slice::<Vec<Token>>(&result.unwrap()).expect("Vec<Token>");
         return ret;
     }
-
 }
 
-    //No se puede usar esta funcion
-    // pub fn market_example_multiple(
-    //     &self,
-    //     marketplaces: Vec<AccountId>
-    // ) {
-    //     for marketplace in marketplaces {
-    //         self.nft_total_supply_marketplace(marketplace);
-    //     }
-    // }
+//No se puede usar esta funcion
+// pub fn market_example_multiple(
+//     &self,
+//     marketplaces: Vec<AccountId>
+// ) {
+//     for marketplace in marketplaces {
+//         self.nft_total_supply_marketplace(marketplace);
+//     }
+// }

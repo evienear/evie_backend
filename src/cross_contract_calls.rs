@@ -9,12 +9,7 @@ trait ExtParas {
         from_index: Option<U128>,
         limit: Option<u64>,
     ) -> Vec<Token>;
-    fn nft_approve(
-        &mut self,
-        token_id: TokenId,
-        account_id: AccountId,
-        msg: Option<String>
-    );
+    fn nft_approve(&mut self, token_id: TokenId, account_id: AccountId, msg: Option<String>);
 }
 
 #[ext_contract(ext_nft_dos)]

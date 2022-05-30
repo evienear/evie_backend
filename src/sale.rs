@@ -46,12 +46,7 @@ impl Contract {
     //Actualiza el precio de una venta del market
     //Updates the price of a sale in the market
     #[payable]
-    pub fn update_price(
-        &mut self,
-        nft_contract_id: AccountId,
-        token_id: String,
-        price: U128,
-    ) {
+    pub fn update_price(&mut self, nft_contract_id: AccountId, token_id: String, price: U128) {
         //Por seguridad verificamos que se haya anezado un solo yocto
         //For security assert one yocto
         assert_one_yocto();
@@ -61,11 +56,17 @@ impl Contract {
         let contract_and_token_id = format!("{}{}{}", contract_id, DELIMETER, token_id);
         //Obtenemos el objeto sale derivado del ID de la sale unico, si no hay token, panic
         //get the sale object derived from the unique sale ID, if no token panic
-        let mut sale = self.sales.get(&contract_and_token_id).expect("No sale found");
+        let mut sale = self
+            .sales
+            .get(&contract_and_token_id)
+            .expect("No sale found");
         //Obtenemos el predecessor de la llamada y verificamos que sea el owner de la venta
         //get the predecessor of the call and assert that it is the owner of the sale
         let owner_id = env::predecessor_account_id();
-        assert_eq!(owner_id, sale.owner_id, "Only the owner can update the price of a sale");
+        assert_eq!(
+            owner_id, sale.owner_id,
+            "Only the owner can update the price of a sale"
+        );
         //Actualizamos el precio de la venta
         //Update the sale price
         sale.sale_conditions = price;
@@ -91,26 +92,31 @@ impl Contract {
         let contract_and_token_id = format!("{}{}{}", contract_id, DELIMETER, token_id);
         //Obtenemos el objeto sale derivado del ID de la sale unico, si no hay token, panic
         //get the sale object derived from the unique sale ID, if no token panic
-        let sale = self.sales.get(&contract_and_token_id).expect("No sale found");
+        let sale = self
+            .sales
+            .get(&contract_and_token_id)
+            .expect("No sale found");
         //Obtenemos el predecessor de la llamada y verificamos que no sea el owner de la venta
         //get the predecessor of the call and assert that it is not the owner of the sale
         let buyer_id = env::predecessor_account_id();
-        assert_ne!(buyer_id, sale.owner_id, "I catch you, you can't offer on your own sale.");
+        assert_ne!(
+            buyer_id, sale.owner_id,
+            "I catch you, you can't offer on your own sale."
+        );
         //Obtenemos el precio de la venta en u128 (punto 0 convierte de U128 a u128)
         //get the sale price in u128 (dot 0 converts from U128 to u128)
         let price = sale.sale_conditions.0;
         //Verificamos que el deposito sea mayor que el precio de la venta
         //Assert that the deposit is greater than the sale price
-        assert!(deposit >= price, "Deposit must be greater than or equal to the current price: {:?}", price);
+        assert!(
+            deposit >= price,
+            "Deposit must be greater than or equal to the current price: {:?}",
+            price
+        );
 
         //Procesamos la compra (Esta función remueve la venta, transfiere dinero y distribuye royalties)
         //Process the purchase (This function removes the sale, transfers money and distributes royalties)
-        self.process_purchase(
-            contract_id,
-            token_id,
-            U128(deposit),
-            buyer_id,
-        );
+        self.process_purchase(contract_id, token_id, U128(deposit), buyer_id);
     }
 
     //Función privada que se encarga de procesar la compra
@@ -126,21 +132,20 @@ impl Contract {
         //Obtiene el objeto sale removiendo la venta
         //Get the sale object removing the sale
         let sale = self.internal_remove_sale(nft_contract_id.clone(), token_id.clone());
-        
         //Iniciamos una llamada a otro contrato (El contrato del nft), esto transferirá tokens
         //al comprador y regresará un payout al market para distribuir los fondos a las cuentas apropiadas
         //Start a call to another contract (the nft contract), this will transfer tokens
         //to the buyer and return a payout to the market to distribute the funds to the appropriate accounts
         ext_contract::nft_transfer_payout(
-            buyer_id.clone(), //Purchaser = Comprador
-            token_id, //Token ID = ID del token
-            sale.approval_id, //Market Approval ID = ID del market aprobado
+            buyer_id.clone(),                      //Purchaser = Comprador
+            token_id,                              //Token ID = ID del token
+            sale.approval_id,                      //Market Approval ID = ID del market aprobado
             "payout from Evie Market".to_string(), //Memo
-            price, //Price = Precio de la venta
+            price,                                 //Price = Precio de la venta
             MAX_ROYALTIES_ACCOUNTS.into(), //Maximum Accounts for payout = Máximo de cuentas para el payout
             //TODO: Revisar esto, aumentar cantidad a 30, pero aumentará gas necesario
             nft_contract_id, //NFT Contract ID for start the cross contract call = ID del contrato del nft para iniciar la llamada
-            1, //yoctoNEAR attached = YoctoNEAR adjunto
+            1,               //yoctoNEAR attached = YoctoNEAR adjunto
             GAS_FOR_NFT_TRANSFER, //Gas for NFT transfer = Gas para transferir el nft
         )
         //Después de que iniciamos el payout, resolvemos la promesa llamando a nuestra propia función resolve_purchase
@@ -197,7 +202,6 @@ impl Contract {
     //         //     tokens.drain(from_index..from_index + limit);
     //         // }
     //         // Promise::resolve(tokens)
-            
     //     });
     // }
 
@@ -206,59 +210,57 @@ impl Contract {
     //Private function that resolves the promise, verifies that there is no problem, if everything is correct, pays the accounts
     // and if not, returns the money to the buyer
     #[private]
-    pub fn resolve_purchase(
-        &mut self,
-        buyer_id: AccountId,
-        price: U128,
-    ) -> U128 {
+    pub fn resolve_purchase(&mut self, buyer_id: AccountId, price: U128) -> U128 {
         //Verifica la información del payout retornada del metodo nft_transfer_payout
         //Verify the information returned from the nft_transfer_payout method
         let payout_option = promise_result_as_success().and_then(|value| {
             //Si el payout es None significa que algo salió mal y devolvemos el dinero al comprador
             //If the payout is None it means that something went wrong and we return the money to the buyer
             near_sdk::serde_json::from_slice::<Payout>(&value)
-            //Convertimos el valor a opcional
-            //Convert the value to an optional
-            .ok()
-            //Retornamos None si el valor es None
-            //Return None if the value is None
-            .and_then(|payout_object| {
-                //Revisamos si length de payout es > 10 (Máximo de cuentas para el payout) o si es vacio, en ese caso retornamos None
-                //Check if the length of payout is > 10 (Maximum accounts for payout) or if it is empty, in that case return None
-                if payout_object.payout.len() > MAX_ROYALTIES_ACCOUNTS as usize || payout_object.payout.is_empty() {
-                    let err_msg_max_roy_amount = format!(
-                        "The payout has more than {} accounts",
-                        MAX_ROYALTIES_ACCOUNTS
-                    );
-                    env::log_str(&err_msg_max_roy_amount);
-                    None
-                } else {
-                    //Si es de un largo correcto
-                    //If it is a correct length
-                    //Mantendremos el monto de cuanto pagar
-                    //We keep the amount to pay
-                    let mut remainder = price.0;
-                    //Iteramos sobre los ids de las cuentas y restemos los pagos
-                    //Iterate over the IDs of the accounts and subtract the payments
-                    for &value in payout_object.payout.values() {
-                        //Buscamos errores de overflow
-                        //Find overflow errors
-                        remainder = remainder.checked_sub(value.0)?;
-                    }
-                    //Si el resto es 0 o 1, significa que todo está correcto
-                    //If the remainder is 0 or 1, it means that everything is correct
-                    if remainder == 0 || remainder == 1 {
-                        //Retornamos el objecto payout porque no hay ningún error
-                        //Return the payout object because there are no errors
-                        Some(payout_object.payout)
-                    } else {
-                        //Si no, significa que hay un error, retornamos None
-                        //If it is not, it means that there is an error, we return None
-                        env::log_str("Payout error, remainder is not 0 or 1");
+                //Convertimos el valor a opcional
+                //Convert the value to an optional
+                .ok()
+                //Retornamos None si el valor es None
+                //Return None if the value is None
+                .and_then(|payout_object| {
+                    //Revisamos si length de payout es > 10 (Máximo de cuentas para el payout) o si es vacio, en ese caso retornamos None
+                    //Check if the length of payout is > 10 (Maximum accounts for payout) or if it is empty, in that case return None
+                    if payout_object.payout.len() > MAX_ROYALTIES_ACCOUNTS as usize
+                        || payout_object.payout.is_empty()
+                    {
+                        let err_msg_max_roy_amount = format!(
+                            "The payout has more than {} accounts",
+                            MAX_ROYALTIES_ACCOUNTS
+                        );
+                        env::log_str(&err_msg_max_roy_amount);
                         None
+                    } else {
+                        //Si es de un largo correcto
+                        //If it is a correct length
+                        //Mantendremos el monto de cuanto pagar
+                        //We keep the amount to pay
+                        let mut remainder = price.0;
+                        //Iteramos sobre los ids de las cuentas y restemos los pagos
+                        //Iterate over the IDs of the accounts and subtract the payments
+                        for &value in payout_object.payout.values() {
+                            //Buscamos errores de overflow
+                            //Find overflow errors
+                            remainder = remainder.checked_sub(value.0)?;
+                        }
+                        //Si el resto es 0 o 1, significa que todo está correcto
+                        //If the remainder is 0 or 1, it means that everything is correct
+                        if remainder == 0 || remainder == 1 {
+                            //Retornamos el objecto payout porque no hay ningún error
+                            //Return the payout object because there are no errors
+                            Some(payout_object.payout)
+                        } else {
+                            //Si no, significa que hay un error, retornamos None
+                            //If it is not, it means that there is an error, we return None
+                            env::log_str("Payout error, remainder is not 0 or 1");
+                            None
+                        }
                     }
-                }
-            })
+                })
         });
         //Si devolvimos un valor en payout, seteamos la variable
         //If we return a value in payout, we set the variable
@@ -283,11 +285,7 @@ impl Contract {
 //Here is the function that is executed when the cross contract is invoked
 #[ext_contract(ext_self)]
 trait ExtSelf {
-    fn resolve_purchase(
-        &mut self,
-        buyer_id: AccountId,
-        price: U128,
-    ) -> Promise;
+    fn resolve_purchase(&mut self, buyer_id: AccountId, price: U128) -> Promise;
 }
 
 // #[ext_contract(ext_nft)]
