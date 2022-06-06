@@ -13,6 +13,7 @@ use crate::cross_contract_calls::*;
 use crate::external::*;
 use crate::internal::*;
 use crate::sale::*;
+use crate::cart_functions::*;
 
 use near_sdk::env::STORAGE_PRICE_PER_BYTE;
 
@@ -22,6 +23,7 @@ mod internal;
 mod nft_callbacks;
 mod sale;
 mod sale_views;
+mod cart_functions;
 
 //Constantes de gas para las llamadas
 //Gas consts for the calls
@@ -43,6 +45,13 @@ pub type TokenId = String;
 //use near_contract_standards::non_fungible_token::{Token, TokenId};
 pub type FungibleTokenId = AccountId;
 pub type ContractAndTokenId = String;
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct CartItem {
+    pub token_id: TokenId,
+    pub contract_id: AccountId,
+}
 
 //definimos el tipo Payout del contrato NFT que usaremos como estandar para las regalías
 //defines the payout type we'll be parsing from the NFT contract as a part of the royalty standard.
@@ -72,6 +81,10 @@ pub struct Contract {
     //Mantemenos seguimiento del storage pagado
     //Maintain track of the storage paid
     pub storage_deposits: LookupMap<AccountId, Balance>,
+
+    //Estructura del carrito de compras
+    //Cart structure
+    pub cart: UnorderedMap<AccountId, Vec<CartItem>>,
 }
 
 #[derive(BorshStorageKey, BorshSerialize)]
@@ -85,6 +98,8 @@ pub enum StorageKey {
     ByNFTTokenTypeInner { token_type_hash: CryptoHash },
     FTTokenIds,
     StorageDeposits,
+    Cart,
+    CartInner { account_id_hash: CryptoHash },
 }
 
 #[near_bindgen]
@@ -101,6 +116,7 @@ impl Contract {
             by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
             by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
+            cart: UnorderedMap::new(StorageKey::Cart),
         };
         this
     }

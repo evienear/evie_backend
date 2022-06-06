@@ -17,10 +17,11 @@ pub(crate) fn hash_account_id(account_id: &AccountId) -> CryptoHash {
     hash
 }
 
+#[near_bindgen]
 impl Contract {
     //Removiendo la venta del marketplace
     //Removing sale from the market, return the removed object
-    pub(crate) fn internal_remove_sale(
+    pub fn internal_remove_sale(
         &mut self,
         nft_contract_id: AccountId,
         token_id: TokenId,
