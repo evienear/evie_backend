@@ -40,7 +40,6 @@ static DELIMETER: &str = ".";
 //Custom types for readability
 pub type SalePriceInYoctoNear = U128;
 pub type TokenId = String;
-//use near_contract_standards::non_fungible_token::{Token, TokenId};
 pub type FungibleTokenId = AccountId;
 pub type ContractAndTokenId = String;
 
