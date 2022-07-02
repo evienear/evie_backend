@@ -15,7 +15,6 @@ impl ShoppingCartFunctions for Contract {
         cart.push(item);
         self.cart.insert(&user, &cart);
     }
-    
     fn remove_item(&mut self, user: AccountId, item: CartItem) {
         let mut cart = self.cart.get(&user).unwrap_or_default();
         cart.retain(|cart_item| cart_item != &item);

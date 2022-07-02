@@ -13,17 +13,18 @@ use crate::cross_contract_calls::*;
 use crate::external::*;
 use crate::internal::*;
 use crate::sale::*;
-use crate::cart_functions::*;
+//use crate::cart_functions::*;
 
 use near_sdk::env::STORAGE_PRICE_PER_BYTE;
 
+mod cart_functions;
 mod cross_contract_calls;
+mod edu_form_functions;
 mod external;
 mod internal;
 mod nft_callbacks;
 mod sale;
 mod sale_views;
-mod cart_functions;
 
 //Constantes de gas para las llamadas
 //Gas consts for the calls
@@ -114,6 +115,8 @@ pub struct Contract {
     //Estructura del carrito de compras
     //Cart structure
     pub cart: UnorderedMap<AccountId, Vec<CartItem>>,
+
+    pub edu_forms: UnorderedSet<EduForm>,
 }
 
 #[derive(BorshStorageKey, BorshSerialize)]
@@ -129,6 +132,8 @@ pub enum StorageKey {
     StorageDeposits,
     Cart,
     CartInner { account_id_hash: CryptoHash },
+    EduForms,
+    EduFormsInner { account_id_hash: CryptoHash },
 }
 
 #[near_bindgen]
@@ -146,6 +151,7 @@ impl Contract {
             by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
             cart: UnorderedMap::new(StorageKey::Cart),
+            edu_forms: UnorderedSet::new(StorageKey::EduForms),
         };
         this
     }
