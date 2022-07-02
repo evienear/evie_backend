@@ -52,6 +52,36 @@ pub struct CartItem {
     pub contract_id: AccountId,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct EduForm {
+    pub title: String,
+    pub supply: U64,
+    pub website: String,
+    pub twitter: String,
+    pub discord: String,
+    pub instagram: String,
+    pub descriptions: Vec<DescriptionPositioned>,
+    // pub price: SalePriceInYoctoNear,
+    // pub token_id: TokenId,
+    // pub contract_id: AccountId,
+    pub images: Vec<ImagePositioned>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct ImagePositioned {
+    pub image_url: String,
+    pub position: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct DescriptionPositioned {
+    pub description: String,
+    pub position: String,
+}
+
 //definimos el tipo Payout del contrato NFT que usaremos como estandar para las regalías
 //defines the payout type we'll be parsing from the NFT contract as a part of the royalty standard.
 #[derive(Serialize, Deserialize)]
