@@ -63,26 +63,26 @@ pub struct EduForm {
     pub twitter: String,
     pub discord: String,
     pub instagram: String,
-    pub descriptions: Vec<DescriptionPositioned>,
+    pub descriptions: Vec<String>,
     // pub price: SalePriceInYoctoNear,
     // pub token_id: TokenId,
     // pub contract_id: AccountId,
-    pub images: Vec<ImagePositioned>,
+    pub images: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct ImagePositioned {
-    pub image_url: String,
-    pub position: String,
-}
+// #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
+// #[serde(crate = "near_sdk::serde")]
+// pub struct ImagePositioned {
+//     pub image_url: String,
+//     pub position: String,
+// }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct DescriptionPositioned {
-    pub description: String,
-    pub position: String,
-}
+// #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
+// #[serde(crate = "near_sdk::serde")]
+// pub struct DescriptionPositioned {
+//     pub description: String,
+//     pub position: String,
+// }
 
 //definimos el tipo Payout del contrato NFT que usaremos como estandar para las regalías
 //defines the payout type we'll be parsing from the NFT contract as a part of the royalty standard.
