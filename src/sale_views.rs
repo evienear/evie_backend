@@ -87,7 +87,7 @@ impl Contract {
     ) -> U64 {
         //Obtenemos el set de token IDs a la venta del contrato nft dado
         //Get the set of token IDs for sale of the given nft contract ID
-        let by_nft_contract_id = self.by_nft_contract_id.get(&nft_contract_id);
+        let by_nft_contract_id: Option<UnorderedSet<String>> = self.by_nft_contract_id.get(&nft_contract_id);
 
         //Si hay un set de ventas, retornamos su lenght, sino, retornamos 0
         //If there is a set of sales, return its lenght, otherwise return 0

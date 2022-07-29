@@ -65,10 +65,10 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
 
         //Obtenemos el storage (Recordemos que .o convierte de U128 a u128)
         //Get the storage (Remember that .o converts from U128 to u128)
-        let storage_amount = self.storage_minimum_balance().0;
+        let storage_amount: u128 = self.storage_minimum_balance().0;
         //Obtenemos el storage pagado por el owner
         //Get the storage paid by the owner
-        let owner_paid_storage = self.storage_deposits.get(&signer_id).unwrap_or(0);
+        let owner_paid_storage: u128 = self.storage_deposits.get(&signer_id).unwrap_or(0);
         //Obtener el storage requerido (storage por (numero de ventas mas 1))
         //Get the storage required (storage by (number of sales plus 1))
         let signer_storage_required = (self.get_supply_by_owner_id(signer_id).0+1) as u128 * storage_amount;

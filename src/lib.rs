@@ -45,6 +45,7 @@ pub type SalePriceInYoctoNear = U128;
 pub type TokenId = String;
 pub type FungibleTokenId = AccountId;
 pub type ContractAndTokenId = String;
+pub type FormId = u32;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -97,6 +98,8 @@ pub struct Contract {
     //dueño del contrato
     //owner of the contract
     pub owner_id: AccountId,
+    pub owner: AccountId,
+    pub admins: UnorderedSet<AccountId>,
     //Para mantener una lista de cada venta mapearemos el ContractAndTokenId a una venta
     //In order to maintain a list of every sale, well map the ContractAndTokenId to the sale
     //Este está hecho de `contract ID + DELIMETER + token ID`
@@ -116,7 +119,7 @@ pub struct Contract {
     //Cart structure
     pub cart: UnorderedMap<AccountId, Vec<CartItem>>,
 
-    pub edu_forms: UnorderedSet<EduForm>,
+    pub edu_forms: UnorderedMap<FormId, EduForm>,
 }
 
 #[derive(BorshStorageKey, BorshSerialize)]
@@ -134,6 +137,7 @@ pub enum StorageKey {
     CartInner { account_id_hash: CryptoHash },
     EduForms,
     EduFormsInner { account_id_hash: CryptoHash },
+    Admins,
 }
 
 #[near_bindgen]
@@ -141,17 +145,20 @@ impl Contract {
     //Función inicial, solo se ejecuta una vez
     //Init function, just call it once
     #[init]
-    pub fn new(owner_id: AccountId) -> Self {
+    pub fn new(owner: AccountId) -> Self {
+        let owner_id = env::signer_account_id();
         let this = Self {
             owner_id,
+            owner,
             //Para evitar colisión de datos
             //Avoiding data collisions
+            admins: UnorderedSet::new(StorageKey::Admins),
             sales: UnorderedMap::new(StorageKey::Sales),
             by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
             by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
             cart: UnorderedMap::new(StorageKey::Cart),
-            edu_forms: UnorderedSet::new(StorageKey::EduForms),
+            edu_forms: UnorderedMap::new(StorageKey::EduForms),
         };
         this
     }
