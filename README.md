@@ -49,48 +49,63 @@ ________________________________________________________________________________
 //Funciones que listan NFTs a la venta en el Marketplace
 //Functions that list NFTs on sale on the Marketplace
 
+```rs
 //Retorna el número de ventas que tiene el contrato (Devuelve U64 (String))
 //Returns the number of sales the contract has (Return U64 (String))
 get_supply_sales()
-
+```
+    
+```rs
 //Retorna el número de ventas que tiene una cuenta dada (El resultado es un String)
 //Returns the number of sales an account has (The result is a String)
 get_supply_by_owner_id(account_id: AccountId)
-
+```
+    
+```rs
 //Retorna una lista paginada de objectos Sale por una cuenta dada (El resultado es un Vector)
 //Returns a paginated list of Sale objects by an account (The result is a Vector)
-
 todo!()//TODO - JEPH: Revisar que funcionen correctamente los parametros opcionales
 get_sales_by_owner_id(account_id: AccountId, from_index: Option<U128>, limit: Option<u64>,)
-
+```
+    
+```rs
 //Retornamos numero de ventas por contrato nft (retorna String)
 //Returns the number of sales by contract nft (Return String)
 get_supply_by_nft_contract_id(nft_contract_id: AccountId)
-
+```
+    
+```rs
 //Retornamos numero de ventas por contrato nft (retorna Vector de sales)
 //Returns the number of sales by contract nft (Return Vector of sales)
 get_sales_by_nft_contract_id(nft_contract_id: AccountId, from_index: Option<U128>, limit: Option<u64>,)
-
+```
+    
+```rs
 //Obtener información de la venta por ID unico (contract + DELIMETER + token ID)
 //Get information of the sale by unique ID (contract + DELIMETER + token ID)
 todo!()//TODO - JEPH: Corregir Typo
 get_sale(nft_contract_token: ContractAndTokenId)
+```
 __________________________________________________________________________________________________________________________________________________
 
 //Listando NFT
 //Listing NFT
 
+```rs
 //Al momento de listar un NFT deben llamarse 2 funciones, la primera es storage_deposit Y SE LE ANEXA UN DEPOSITO
 //At the moment of listing an NFT we should call 2 functions, the first is storage_deposit A WE ATTACH A DEPOSIT
 //Esta es al contrato actual del marketplace
 //This is to the actual contract - marketplace
 storage_deposit(account_id: Option<AccountId>) //El AccountID es opcional, si no se manda toma el caller - optional, if not passed take the caller
+```
 
+```rs
 //Y la segunda es:
 //And the second is:
 //Para listar un NFT debe llamarse a la función nft_approve del contrato original en el que se minteó el nft
 //In order to list an NFT there should be called the funcion nft_approve in the orginal nft contract
 nft_approve(token_id: TokenId/*String*/, account_id: AccountId, msg: Option<String> /*Required*/)
+```
 
 //Nada
 //internal_remove_sale(nft_contract_id: AccountId, token_id: String)
