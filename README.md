@@ -109,3 +109,52 @@ nft_approve(token_id: TokenId/*String*/, account_id: AccountId, msg: Option<Stri
 
 //Nada
 //internal_remove_sale(nft_contract_id: AccountId, token_id: String)
+
+__________________________________________________________________________________________________________________________________________________
+
+//Funciones EduForm
+//EduForm functions
+
+```rs
+//Añadir una eduform a la lista de eduforms
+//Add an eduform to the list of eduforms
+add_form(form: EduForm)
+```
+
+```rs
+//Eliminar una eduform de la lista de eduforms
+//Remove an eduform from the list of eduforms
+remove_form(form_id: u32)
+```
+
+```rs
+//Actualizar una eduform de la lista de eduforms
+//Update an eduform from the list of eduforms
+update_form(form_id: u32, form: EduForm)
+```
+
+```rs
+//Obtener una eduform de la lista de eduforms
+//Get an eduform from the list of eduforms
+get_form_by_id(form_id: u32)
+```
+
+```rs
+//Obtener todas las eduforms de la lista de eduforms
+//Get all eduforms from the list of eduforms
+get_forms(&self, from_index: Option<U128>, limit: Option<u64>)
+```
+    
+```rs
+//Obtener el número de eduforms de la lista de eduforms
+//Get the number of eduforms from the list of eduforms
+get_forms_count()
+```
+    
+```rs
+//Eliminar todas las eduforms de la lista de eduforms
+//Remove all eduforms from the list of eduforms
+remove_all_forms()
+```
+    
+```rs
