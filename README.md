@@ -155,6 +155,40 @@ get_forms_count()
 //Eliminar todas las eduforms de la lista de eduforms
 //Remove all eduforms from the list of eduforms
 remove_all_forms()
+```    
+__________________________________________________________________________________________________________________________________________________
+
+//Funciones de carrito de compras
+//Cart functions
+
+```rs
+//Añadir un producto al carrito de compras
+//Add a product to the cart
+add_item(user: AccountId, item: CartItem)
+```
+
+```rs
+//Eliminar un producto del carrito de compras
+//Remove a product from the cart
+remove_item(user: AccountId, item: CartItem)
+```
+
+```rs
+//Limpiar el carrito de compras
+//Clear the cart
+clear_cart(user: AccountId)
+```
+
+```rs
+//Obtener todos los productos del carrito de compras
+//Get all products from the cart
+get_cart_items(user: AccountId)
+```
+
+<!-- ```rs
+//Obtener el número de productos del carrito de compras
+//Get the number of products from the cart
+get_cart_items_count(user: AccountId)
 ```
     
-```rs
+```rs -->

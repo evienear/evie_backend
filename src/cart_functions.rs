@@ -11,12 +11,12 @@ trait ShoppingCartFunctions {
 #[near_bindgen]
 impl ShoppingCartFunctions for Contract {
     fn add_item(&mut self, user: AccountId, item: CartItem) {
-        let mut cart = self.cart.get(&user).unwrap_or_default();
+        let mut cart: Vec<CartItem> = self.cart.get(&user).unwrap_or_default();
         cart.push(item);
         self.cart.insert(&user, &cart);
     }
     fn remove_item(&mut self, user: AccountId, item: CartItem) {
-        let mut cart = self.cart.get(&user).unwrap_or_default();
+        let mut cart: Vec<CartItem> = self.cart.get(&user).unwrap_or_default();
         cart.retain(|cart_item| cart_item != &item);
         self.cart.insert(&user, &cart);
     }
@@ -30,7 +30,7 @@ impl ShoppingCartFunctions for Contract {
     }
 
     fn get_cart_total(&self, user: AccountId) -> U128 {
-        let _cart = self.cart.get(&user).unwrap_or_default();
+        let _cart: Vec<CartItem> = self.cart.get(&user).unwrap_or_default();
         //cart.iter().fold(U128(0), |acc, item| acc + item.price)
         U128(0)
     }

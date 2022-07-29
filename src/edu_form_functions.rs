@@ -1,4 +1,4 @@
-use near_sdk::require;
+use near_sdk::{require, collections::Vector};
 
 use crate::*;
 
@@ -16,7 +16,7 @@ trait EduFormFunctions {
 impl EduFormFunctions for Contract {
     fn add_form(&mut self, form: EduForm) {
         require!(self.admins.contains(&env::signer_account_id()), "Only admins can add forms");
-        let len_forms = self.edu_forms.len().try_into().unwrap();
+        let len_forms: u32 = self.edu_forms.len().try_into().unwrap();
         self.edu_forms.insert(&len_forms, &form);
     }
     fn remove_form(&mut self, form_id: u32) {
@@ -28,12 +28,12 @@ impl EduFormFunctions for Contract {
         self.edu_forms.insert(&form_id, &form);
     }
     fn get_forms(&self, from_index: Option<U128>, limit: Option<u64>) -> Vec<EduForm> {
-        let forms = self.edu_forms.keys_as_vector();
+        let forms: &Vector<u32> = self.edu_forms.keys_as_vector();
         let start: u128 = u128::from(from_index.unwrap_or(U128(0)));
         forms.iter()
             .skip(start as usize)
             .take(limit.unwrap_or(0) as usize)
-            .map(|key| self.edu_forms.get(&key).unwrap())
+            .map(|key: u32| self.edu_forms.get(&key).unwrap())
             .collect()
     }
     fn get_form_by_id(&self, form_id: u32) -> EduForm {
