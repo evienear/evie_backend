@@ -136,7 +136,13 @@ impl Contract {
         //al comprador y regresará un payout al market para distribuir los fondos a las cuentas apropiadas
         //Start a call to another contract (the nft contract), this will transfer tokens
         //to the buyer and return a payout to the market to distribute the funds to the appropriate accounts
-        ext_contract::nft_transfer_payout(
+        ext_contract::ext(
+            nft_contract_id, //NFT Contract ID for start the cross contract call = ID del contrato del nft para iniciar la llamada
+        ).with_attached_deposit(
+            1 //yoctoNEAR attached = YoctoNEAR adjunto
+        ).with_static_gas(
+            GAS_FOR_NFT_TRANSFER //Gas for NFT transfer = Gas para transferir el nft
+        ).nft_transfer_payout(
             buyer_id.clone(),                      //Purchaser = Comprador
             token_id,                              //Token ID = ID del token
             sale.approval_id,                      //Market Approval ID = ID del market aprobado
@@ -144,19 +150,19 @@ impl Contract {
             price,                                 //Price = Precio de la venta
             MAX_ROYALTIES_ACCOUNTS.into(), //Maximum Accounts for payout = Máximo de cuentas para el payout
             //TODO: Revisar esto, aumentar cantidad a 30, pero aumentará gas necesario
-            nft_contract_id, //NFT Contract ID for start the cross contract call = ID del contrato del nft para iniciar la llamada
-            1,               //yoctoNEAR attached = YoctoNEAR adjunto
-            GAS_FOR_NFT_TRANSFER, //Gas for NFT transfer = Gas para transferir el nft
         )
         //Después de que iniciamos el payout, resolvemos la promesa llamando a nuestra propia función resolve_purchase
         //After starting the payout, resolve the promise calling our own function resolve_purchase
-        .then(ext_self::resolve_purchase(
+        .then(ext_self::ext(
+            env::current_account_id(), //Invoked in this contract = Invocado en este contrato
+        ).with_static_gas(
+            GAS_FOR_ROYALTIES
+        ).resolve_purchase(
             buyer_id, //Este parametro es necesario, en caso de error, para devolver al comprador
             price, //The parameters are necesaries in case of error, in order to refund to the buyer
-            env::current_account_id(), //Invoked in this contract = Invocado en este contrato
-            NO_DEPOSIT,
-            GAS_FOR_ROYALTIES,
-        ))
+        )
+    
+    )
     }
 
     // pub fn nft_tokens_for_owner_extern(

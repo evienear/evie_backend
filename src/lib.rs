@@ -14,6 +14,8 @@ use crate::external::*;
 use crate::internal::*;
 use crate::sale::*;
 //use crate::cart_functions::*;
+use crate::buy_from_other_marketplaces::*;
+
 
 use near_sdk::env::STORAGE_PRICE_PER_BYTE;
 
@@ -25,6 +27,7 @@ mod internal;
 mod nft_callbacks;
 mod sale;
 mod sale_views;
+mod buy_from_other_marketplaces;
 
 //Constantes de gas para las llamadas
 //Gas consts for the calls
@@ -262,17 +265,8 @@ impl Contract {
     // //Obtener la cantidad total de NFTs minteados del contrato
     // //Get the total amount of NFTs minted by the contract
     pub fn nft_total_supply_marketplace(&self, marketplace_contract_id: AccountId) -> Promise {
-        ext_paras::nft_total_supply(
-            marketplace_contract_id,
-            //AccountId::new_unchecked(String::from("paras-token-v2.testnet")), //contract
-            0,                           //yoctoNEAR to attach,
-            GAS_FOR_CROSS_CONTRACT_CALL, //gas to attach,
-        )
-        .then(ext_nft_dos::on_nft_total_supply(
-            env::current_account_id(),
-            0,                           //yoctoNEAR to attach,
-            GAS_FOR_CROSS_CONTRACT_CALL, //gas to attach,
-        ))
+        ext_paras::ext(marketplace_contract_id).with_static_gas(GAS_FOR_CROSS_CONTRACT_CALL).nft_total_supply()
+        .then(ext_nft_dos::ext(env::current_account_id()).with_static_gas(GAS_FOR_CROSS_CONTRACT_CALL).on_nft_total_supply())
     }
 
     // //Obtener los tokens de un usuario
@@ -285,20 +279,8 @@ impl Contract {
         limit: Option<u64>,
         marketplace_contract_id: AccountId,
     ) -> Promise {
-        ext_paras::nft_tokens_for_owner(
-            account_id,
-            from_index,
-            // Some(from_index.unwrap_or(U128(0))),
-            limit,
-            marketplace_contract_id,
-            0,
-            GAS_FOR_CROSS_CONTRACT_CALL,
-        )
-        .then(ext_nft_dos::on_nft_tokens_for_owner(
-            env::current_account_id(),
-            0,
-            GAS_FOR_CROSS_CONTRACT_CALL,
-        ))
+        ext_paras::ext(marketplace_contract_id).with_static_gas(GAS_FOR_CROSS_CONTRACT_CALL).nft_tokens_for_owner(account_id, from_index, limit)
+        .then(ext_nft_dos::ext(env::current_account_id()).with_static_gas(GAS_FOR_CROSS_CONTRACT_CALL).on_nft_tokens_for_owner())
     }
 
     #[payable]
@@ -309,14 +291,8 @@ impl Contract {
         msg: Option<String>,
         marketplace_contract_id: AccountId,
     ) {
-        ext_paras::nft_approve(
-            token_id,
-            env::current_account_id(),
-            msg,
-            marketplace_contract_id,
-            1,
-            GAS_FOR_CROSS_CONTRACT_CALL,
-        );
+        ext_paras::ext(marketplace_contract_id).with_attached_deposit(1)
+        .with_static_gas(GAS_FOR_CROSS_CONTRACT_CALL).nft_approve(token_id, env::current_account_id(), msg);
     }
 
     //Callback de Funciones externas
