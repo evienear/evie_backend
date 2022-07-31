@@ -33,6 +33,7 @@ mod buy_from_other_marketplaces;
 //Gas consts for the calls
 const GAS_FOR_CROSS_CONTRACT_CALL: Gas = Gas(5_000_000_000_000);
 const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
+const GAS_FOR_NFT_TRANSFER_AS_NUMBER: u128 = 15_000_000_000_000;
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
 const NO_DEPOSIT: Balance = 0;
 const MAX_ROYALTIES_ACCOUNTS: u8 = 10;

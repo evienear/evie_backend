@@ -189,6 +189,16 @@ get_cart_items(user: AccountId)
 //Obtener el número de productos del carrito de compras
 //Get the number of products from the cart
 get_cart_items_count(user: AccountId)
-```
+``` -->
     
-```rs -->
+__________________________________________________________________________________________________________________________________________________
+
+
+//Funciones de compra de carrito de compra de contratos externos
+//Purchase functions of cart of external contract purchases
+
+```rs
+//Comprar un nft del carrito de compras de un contrato externo
+//Buy an nft from the cart of an external contract purchase
+buy_from_other_marketplaces(&mut self, user: AccountId, item: TokenId, price: U128)
+```

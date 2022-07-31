@@ -16,6 +16,26 @@ trait ExtContract {
         balance: U128, //El precio al que se compro el token = The price to buy the token
         max_len_payout: u32, //Longitud máxima del payout = Max length of payout
     );
+
+    /*Tener en cuenta que esta función considera comprador a este contrato,
+    por lo que enviará el nft al mismo, y no al usuario, entonces
+    debemos hacer un callback a esta función para que envie
+    el nft al usuario.*/
+    /*Note that this function considers the buyer to this contract,
+    so it will send the nft to the same, and not to the user, so
+    we must make a callback to this function to send the nft to the user.*/
+    fn nft_buy(
+        &mut self,
+        token_series_id: /*TokenSeriesId*/ String,
+    ) -> TokenId;
+
+    /*Esta función nos dará el precio de los nfts de Paras,
+    generalmente no la llamaremos desde el contrato, pero si desde el
+    servidor node.*/
+    fn nft_get_series_price(
+        self, 
+        token_series_id: String,
+    ) -> Option<U128>;
 }
 
 // #[ext_contract(ext_nft)]
