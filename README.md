@@ -202,3 +202,9 @@ ________________________________________________________________________________
 //Buy an nft from the cart of an external contract purchase
 buy_from_other_marketplaces(&mut self, user: AccountId, item: TokenId, price: U128)
 ```
+
+
+
+```rs
+todo()! //Create add admins functions.
+```
