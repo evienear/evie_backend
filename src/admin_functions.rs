@@ -4,6 +4,17 @@ use crate::*;
 
 #[near_bindgen]
 impl Contract {
+
+    pub fn change_admin_can_add_admins(&mut self) -> bool {
+        require!(env::signer_account_id() == self.owner, "Only the owner can change this");
+        self.admin_can_add_admins = !self.admin_can_add_admins;
+        self.admin_can_add_admins
+    }
+
+    pub fn view_admin_can_add_admins(&self) -> bool {
+        self.admin_can_add_admins
+    }
+
     pub fn view_owner(&self) -> AccountId {
         self.owner.clone()
     }
