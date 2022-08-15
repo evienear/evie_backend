@@ -13,6 +13,7 @@ use crate::cross_contract_calls::*;
 use crate::external::*;
 use crate::internal::*;
 use crate::sale::*;
+use crate::admin_functions::*;
 //use crate::cart_functions::*;
 use crate::buy_from_other_marketplaces::*;
 
@@ -28,6 +29,7 @@ mod nft_callbacks;
 mod sale;
 mod sale_views;
 mod buy_from_other_marketplaces;
+mod admin_functions;
 
 //Constantes de gas para las llamadas
 //Gas consts for the calls
@@ -74,6 +76,14 @@ pub struct EduForm {
     // pub token_id: TokenId,
     // pub contract_id: AccountId,
     pub images: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct EduFormWithId {
+    pub id: FormId,
+    // pub visibility: bool,
+    pub form: EduForm,
 }
 
 // #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize)]
@@ -126,6 +136,10 @@ pub struct Contract {
     pub cart: UnorderedMap<AccountId, Vec<CartItem>>,
 
     pub edu_forms: UnorderedMap<FormId, EduForm>,
+
+    pub edu_form_number: u32,
+
+    pub admin_can_add_admins: bool,
 }
 
 #[derive(BorshStorageKey, BorshSerialize)]
@@ -165,6 +179,8 @@ impl Contract {
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
             cart: UnorderedMap::new(StorageKey::Cart),
             edu_forms: UnorderedMap::new(StorageKey::EduForms),
+            edu_form_number: 0,
+            admin_can_add_admins: false,
         };
         this
     }
